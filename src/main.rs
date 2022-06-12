@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use web_sys::console;
 use yew::prelude::*;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct Period {
     pub name: String,
@@ -32,8 +32,24 @@ struct Forecast {
     pub properties: Properties
 }
 
+#[derive(PartialEq, Properties)]
+struct PeriodComponentProps {
+    pub period: Period
+}
+
+#[function_component(PeriodComponent)]
+fn period_component(props: &PeriodComponentProps) -> Html {
+    html! {
+        <> 
+            { props.period.start_time.to_owned()}
+        </>
+    }
+}
+
 #[function_component(App)]
 fn app_component() -> Html {
+    let forecast = use_state( || None);
+    let forecast_clone = forecast.clone();
     wasm_bindgen_futures::spawn_local(async move {
         let forecast_endpoint = format!(
             "https://api.weather.gov/gridpoints/{office}/{x},{y}/forecast",
@@ -48,14 +64,23 @@ fn app_component() -> Html {
             .json()
             .await
             .unwrap();
-        console::log_1(&JsString::from(
-            serde_json::to_string(&fetched_forecast).unwrap())
-        ) 
+        forecast.set(Some(fetched_forecast));
     });
 
-    html!(
-        {"Hi"}
-    )
+    match forecast_clone.as_ref() {
+        Some(f) => {
+            f.properties.periods.iter().map(|period| {
+                html! {
+                    <PeriodComponent period={period.clone()}/>
+                }
+            }).collect()
+        },
+        None => html!(
+            {
+                "No data yet".to_string()
+            }
+        )
+    }
 }
 
 fn main() {
