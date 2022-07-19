@@ -1,0 +1,28 @@
+.period {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+}
+
+.name {
+
+}
+
+.temp {
+
+}
+
+.forecast {
+    font-size: 12px;
+}
+
+html {
+
+}
+
+body {
+    padding: 1em;
+}
+
+img {
+    height: 50px;
+}
